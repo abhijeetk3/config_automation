@@ -1,13 +1,14 @@
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import redirect, render
 from django.http import HttpResponse
 from django.template import loader
 from django.contrib.auth.models import User
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 
 #from . models import Blog
 
-
+@login_required(login_url="/auth_app/login")
 def index(request):
     return render(request, "auth_app/index.html")
 
@@ -18,6 +19,9 @@ def login_page(request):
         print(username)
         print(pass1)
 
+        if not User.objects.filter(username = username).exists():
+            messages.error(request, "Invalid Username")
+            return redirect("loginpage")
         user = authenticate(username = username, password = pass1)
         fname = user.first_name
 
@@ -33,7 +37,8 @@ def login_page(request):
         
 
 def logout_page(request):
-    return render(request, "auth_app/login.html")
+    logout(request)
+    return redirect("loginpage")
 
 def register(request):
     if request.method == 'POST':
